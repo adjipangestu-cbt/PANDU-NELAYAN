@@ -89,7 +89,7 @@ export const STUDY_REGIONS: Record<RegionKey, RegionInfo> = {
   },
   'Teluk Banten': {
     id: 'Teluk Banten',
-    fullName: 'Perairan Pesisir Teluk Banten',
+    fullName: 'Perairan Teluk Banten',
     wppCode: 'WPP-NRI 712 (Laut Jawa)',
     province: 'Banten',
     lat: -5.9,
@@ -107,7 +107,7 @@ export const STUDY_REGIONS: Record<RegionKey, RegionInfo> = {
   },
   'Pesisir Indramayu': {
     id: 'Pesisir Indramayu',
-    fullName: 'Perairan PPI Karangsong Indramayu',
+    fullName: 'Perairan Pesisir Indramayu',
     wppCode: 'WPP-NRI 712 (Laut Jawa)',
     province: 'Jawa Barat',
     lat: -6.25,
@@ -125,7 +125,7 @@ export const STUDY_REGIONS: Record<RegionKey, RegionInfo> = {
   },
   'Kabaena Sultra': {
     id: 'Kabaena Sultra',
-    fullName: 'Perairan Pesisir Pulau Kabaena Bombana',
+    fullName: 'Perairan Kabaena Sultra',
     wppCode: 'WPP-NRI 714 (Teluk Tolo - Laut Banda)',
     province: 'Sulawesi Tenggara',
     lat: -5.25,
@@ -143,7 +143,7 @@ export const STUDY_REGIONS: Record<RegionKey, RegionInfo> = {
   },
   'Ambon Seram': {
     id: 'Ambon Seram',
-    fullName: 'Perairan PPN Ambon & Selat Seram',
+    fullName: 'Perairan Ambon Seram',
     wppCode: 'WPP-NRI 715 (Laut Maluku - Seram)',
     province: 'Maluku',
     lat: -3.65,
@@ -161,6 +161,31 @@ export const STUDY_REGIONS: Record<RegionKey, RegionInfo> = {
   },
 };
 
+/**
+ * CSV <-> Frontend Mapping Dictionaries
+ * Convert between dataset_kelayakan_melaut.csv strings and TypeScript keys/types.
+ */
+export const CSV_WILAYAH_TO_REGION_KEY: Record<string, RegionKey> = {
+  'Perairan PPN Karangantu Serang': 'Karangantu Serang',
+  'Perairan Teluk Banten': 'Teluk Banten',
+  'Perairan Pesisir Indramayu': 'Pesisir Indramayu',
+  'Perairan Kabaena Sultra': 'Kabaena Sultra',
+  'Perairan Ambon Seram': 'Ambon Seram',
+};
+
+export const CSV_SPESIES_TO_SPECIES_KEY: Record<string, SpeciesKey> = {
+  'Kembung (Rastrelliger kanagurta)': 'Kembung',
+  'Tongkol (Euthynnus affinis)': 'Tongkol',
+  'Lemuru (Sardinella lemuru)': 'Lemuru',
+  'Tenggiri (Scomberomorus commerson)': 'Tenggiri',
+};
+
+export const CSV_MUSIM_TO_SEASON_TYPE: Record<string, SeasonType> = {
+  'Musim Barat (Angin & Gelombang Tinggi)': 'Musim Barat (Des-Feb)',
+  'Musim Peralihan I (Pancaroba)': 'Musim Peralihan I (Mar-Mei)',
+  'Musim Timur (Angin Kencang & Arus Kuat)': 'Musim Timur (Jun-Agu)',
+  'Musim Peralihan II (Tenang & Panas Terik)': 'Musim Peralihan II (Sep-Nov)',
+};
 export const TARGET_SPECIES: Record<SpeciesKey, SpeciesInfo> = {
   Kembung: {
     id: 'Kembung',

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Compass,
   LayoutGrid,
@@ -18,6 +18,7 @@ import {
   RegionKey,
   STUDY_REGIONS,
   SimulationInput,
+  SimulationOutput,
   runPanduNelayanSimulation,
   HourlyForecastItem,
   PippReferenceRow,
@@ -74,11 +75,54 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // Real-time scientific & microeconomic calculation
-  const simOutput = useMemo(
+  // Real-time scientific & microeconomic calculation (instant local TS engine)
+  const localSimOutput = useMemo(
     () => runPanduNelayanSimulation(simInput),
     [simInput]
   );
+
+  // PKL override state: holds fields from the Python RandomForest backend
+  const [pklOverrides, setPklOverrides] = useState<Partial<SimulationOutput> | null>(null);
+
+  // Merged output: local TS engine + PKL overrides when available
+  const simOutput: SimulationOutput = useMemo(() => {
+    if (!pklOverrides) return localSimOutput;
+    return { ...localSimOutput, ...pklOverrides };
+  }, [localSimOutput, pklOverrides]);
+
+  // Debounced async effect: POST /api/predict to Python FastAPI backend (120ms debounce)
+  const pklTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    setPklOverrides(null); // Clear stale PKL data immediately on input change
+    if (pklTimerRef.current) clearTimeout(pklTimerRef.current);
+    pklTimerRef.current = setTimeout(async () => {
+      try {
+        const resp = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(simInput),
+        });
+        if (!resp.ok) return;
+        const json = (await resp.json()) as { ok?: boolean; data?: Record<string, unknown> };
+        if (json.ok && json.data) {
+          const d = json.data;
+          setPklOverrides({
+            hargaLayakEffortRp: typeof d.hargaLayakEffortRp === 'number' ? d.hargaLayakEffortRp : undefined,
+            decisionClass: typeof d.decisionClass === 'number' ? (d.decisionClass as SimulationOutput['decisionClass']) : undefined,
+            decisionLabel: typeof d.decisionLabel === 'string' ? (d.decisionLabel as SimulationOutput['decisionLabel']) : undefined,
+            shortDecisionBadge: typeof d.shortDecisionBadge === 'string' ? (d.shortDecisionBadge as SimulationOutput['shortDecisionBadge']) : undefined,
+            decisionColor: typeof d.decisionColor === 'string' ? (d.decisionColor as SimulationOutput['decisionColor']) : undefined,
+            skorKelayakanAi: typeof d.skorKelayakanAi === 'number' ? d.skorKelayakanAi : undefined,
+            labaEkonomiRiilRp: typeof d.labaEkonomiRiilRp === 'number' ? d.labaEkonomiRiilRp : undefined,
+            isAccountingProfitIllusion: typeof d.isAccountingProfitIllusion === 'boolean' ? d.isAccountingProfitIllusion : undefined,
+          });
+        }
+      } catch {
+        // Python backend offline — local TS engine remains active
+      }
+    }, 120);
+    return () => { if (pklTimerRef.current) clearTimeout(pklTimerRef.current); };
+  }, [simInput]);
 
   // Evaluate active toast notifications for TUNDA MELAUT or high wave risk
   const activeToastAlerts = useMemo(

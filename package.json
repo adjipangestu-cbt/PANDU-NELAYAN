@@ -9,6 +9,8 @@
     "start": "tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
+    "dev:py": "uvicorn app:app --reload --port 8000",
+    "dev:full": "node dev-full.mjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

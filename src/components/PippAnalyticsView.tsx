@@ -33,7 +33,21 @@ interface PippAnalyticsViewProps {
 export const PippAnalyticsView: React.FC<PippAnalyticsViewProps> = ({
   onSelectRowForSimulation,
 }) => {
-  const allRows = useMemo(() => generatePippReferenceDataset(), []);
+  // Initialize with local generated data, then fetch real CSV rows from backend
+  const [allRows, setAllRows] = useState<PippReferenceRow[]>(() => generatePippReferenceDataset());
+
+  useEffect(() => {
+    fetch('/api/trips?limit=6000')
+      .then((res) => res.json())
+      .then((data: { ok?: boolean; rows?: PippReferenceRow[] }) => {
+        if (data.ok && Array.isArray(data.rows) && data.rows.length > 0) {
+          setAllRows(data.rows);
+        }
+      })
+      .catch(() => {
+        // Backend offline — keep using locally generated dataset
+      });
+  }, []);
 
   // State for Year-over-Year Fish Catch Trend Overlay Comparator
   const [overlayYearA, setOverlayYearA] = useState<SimulationYear>(2023);
