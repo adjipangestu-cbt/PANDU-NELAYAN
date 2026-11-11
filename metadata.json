@@ -1,0 +1,6 @@
+{
+  "name": "PANDU-NELAYAN: DSS Kelayakan Melaut & Harga Layak WebGIS AI",
+  "description": "Sistem Pendukung Keputusan Kelayakan Melaut dan Harga Layak berbasis WebGIS Terpadu Iklim (WBGT), Konservasi (KKP), Biologi Perikanan (Lm), dan Opportunity Cost Mikroekonomi untuk Nelayan Kecil (<5 GT).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
