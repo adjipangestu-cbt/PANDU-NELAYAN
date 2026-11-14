@@ -14,12 +14,15 @@ Endpoints:
 import os
 import math
 from typing import Optional
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import joblib
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
@@ -774,8 +777,32 @@ def analytics_summary():
 
 
 # ---------------------------------------------------------------------------
+# Production static file serving (Vite build output)
+# ---------------------------------------------------------------------------
+DIST_DIR = Path(__file__).parent / "dist"
+
+if DIST_DIR.is_dir():
+    # Serve /assets/* and other static files from dist/
+    app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="assets")
+
+    # Serve any static file that exists in dist/ (favicon, etc.)
+    @app.get("/{full_path:path}")
+    def serve_spa(full_path: str):
+        """SPA fallback: serve the file if it exists, otherwise index.html."""
+        file_path = DIST_DIR / full_path
+        if file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(DIST_DIR / "index.html"))
+
+    print(f"[PANDU-NELAYAN] Serving static frontend from {DIST_DIR}")
+else:
+    print(f"[PANDU-NELAYAN] No dist/ folder found — run 'npm run build' first for production")
+
+
+# ---------------------------------------------------------------------------
 # Run with: uvicorn app:app --reload --port 8000
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)
